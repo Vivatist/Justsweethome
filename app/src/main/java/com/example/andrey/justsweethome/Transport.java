@@ -1,12 +1,13 @@
 package com.example.andrey.justsweethome;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.InetAddress;
-import java.net.Socket;
-import java.util.ArrayList;
+
+
+        import android.os.AsyncTask;
+        import java.net.*;
+        import java.util.Date;
+        import java.text.SimpleDateFormat;
+        import java.util.ArrayList;
+        import java.io.*;
 
 /**
  * Created by Andrey on 23.11.2017.
@@ -14,19 +15,22 @@ import java.util.ArrayList;
 
 class Transport {
 
-    private String IPAdress;
-    private int port;
-    private String login;
-    private String password;
+
+    private String IPAdressController;
+    private int portController;
+    private String UserLogin;
+    private String UserPassword;
 
     Transport(String _IPAdress, int _port, String _login, String _password) {
 
-        IPAdress = _IPAdress;
-        port = _port;
-        login = _login;
-        password = _password;
+        IPAdressController = _IPAdress;
+        portController = _port;
+        UserLogin = _login;
+        UserPassword = _password;
 
     }
+
+
 
     //~~~~~~~~~~~~~ СОБЫТИЯ ~~~~~~~~~~~~~~~~~
 
@@ -46,7 +50,6 @@ class Transport {
         listeners.remove(listener);
     }
 
-    //событие для случая когда в сокет поступили данные
     private void fireListenersWhenAcceptingTCPPackage(NetworkPackage np) {
         // перебираем массив подписчиков и каждому подписчику сообщаем что произошло событие (и передаем параметр заодно)
         for(ListenerOfTransport listener : listeners) {
@@ -55,76 +58,96 @@ class Transport {
     }
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    void setIPAdress(String _IPAdress) {
-        IPAdress = _IPAdress;
+
+
+    void setIPAdressController(String _IPAdress) {
+        IPAdressController = _IPAdress;
     }
 
-    public String getIPAdress() {
-        return IPAdress;
+    public String getIPAdressController() {
+        return IPAdressController;
     }
 
-    void setPort(int _port) {
-        port = _port;
+    void setPortController(int _port) {
+        portController = _port;
     }
 
-    public int getPort() {
-        return port;
+    public int getPortController() {
+        return portController;
     }
 
-    void setLogin(String _login) {
-        login = _login;
+    void setUserLogin(String _login) {
+        UserLogin = _login;
     }
 
-    public String getLogin() {
-        return login;
+    public String getUserLogin() {
+        return UserLogin;
     }
 
-    void setPassword(String _password) {
-        password = _password;
+    void setUserPassword(String _password) {
+        UserPassword = _password;
     }
 
-    public String getPassword() {
-        return password;
+    public String getUserPassword() {
+        return UserPassword;
+    }
+
+    public void sendTest(){
+        NetworkPackage np = new NetworkPackage();
+        np.UIN = 646464;
+        np.responseToUIN = 111111;
+        np.data = "!TEST PACKET! - !ТЕСТОВЫЙ ПАКЕТ!";
+        new send().execute(np); //отдаем тестовый пакет на передачу в поток
     }
 
 
-    boolean sendTest() {
 
-        try {
-            InetAddress ipAddress = InetAddress.getByName(IPAdress); // создаем объект который отображает вышеописанный IP-адрес.
-            //System.out.println("Any of you heard of a socket with IP address " + address + " and port " + serverPort + "?");
-            Socket socket = new Socket(ipAddress, port); // создаем сокет используя IP-адрес и порт сервера.
-            //System.out.println("Yes! I just got hold of the program.");
+    //создаем отдельный поток для отправки донных по сети
+    private class  send extends AsyncTask <NetworkPackage, Integer, Boolean>{
 
-            // Берем входной и выходной потоки сокета, теперь можем получать и отсылать данные клиентом.
-            InputStream sin = socket.getInputStream();
-            OutputStream sout = socket.getOutputStream();
 
-            // Конвертируем потоки в другой тип, чтоб легче обрабатывать текстовые сообщения.
-            DataInputStream in = new DataInputStream(sin);
-            DataOutputStream out = new DataOutputStream(sout);
+        @Override
+        protected Boolean doInBackground(NetworkPackage[] params) {
+            try {
+                while (true) {
 
-            // Создаем поток для чтения с клавиатуры.
-           // BufferedReader keyboard = new BufferedReader(new InputStreamReader(System.in));
-            String line = null;
-            //System.out.println("Type in something and press enter. Will send it to the server and tell ya what it thinks.");
-            //System.out.println();
+                    // String str = keyboard.readLine();
+                    Date curTime = new Date();
+                    SimpleDateFormat parsedDate = new SimpleDateFormat("HH:mm:ss SSSS");
+                    //String str = "";
+                    Socket s = new Socket("89.169.58.253", 7777);
+                    //params[0] = parsedDate.format(curTime) + " -> " +params[0]+ "\n" + s.getInetAddress().getHostAddress() + ":" + s.getLocalPort() + "\n";
 
-            while (true) {
-                line = "This line sended by client " + login; // ждем пока пользователь введет что-то и нажмет кнопку Enter.
-                //System.out.println("Sending this line to the server...");
-                out.writeUTF(line); // отсылаем введенную строку текста серверу.
-                out.flush(); // заставляем поток закончить передачу данных.
-                line = in.readUTF(); // ждем пока сервер отошлет строку текста.
-               // System.out.println("The server was very polite. It sent me this : " + line);
-               // System.out.println("Looks like the server is pleased with us. Go ahead and enter more lines.");
-               // System.out.println();
+
+
+                    ObjectOutputStream oos = new ObjectOutputStream( s.getOutputStream() );
+                    oos.writeObject(params[0]);
+
+                    // читаем ответ
+                    byte buf[] = new byte[64 * 1024];
+                    int r = s.getInputStream().read(buf);
+                    String data = new String(buf, 0, r);
+
+                    // выводим ответ в консоль
+                    System.out.println(data);
+
+                    // генерируем событие и передаем через него принятую информацию
+                    fireListenersWhenAcceptingTCPPackage(params[0]);
+
+                    s.close();
+                    oos.close();
+
+                    return true;
+                }
+            } catch (Exception e) {
+                //не забыть добавить сюда событие
+                System.out.println("Ошибка в модуле передачи и приема через socket: " + e);
+                return false;
             }
-        } catch (Exception x) {
-            x.printStackTrace();
+
         }
-    return true;
+
+
+
     }
-
-
 }
