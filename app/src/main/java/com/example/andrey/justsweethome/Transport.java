@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.ArrayList;
 
 /**
  * Created by Andrey on 23.11.2017.
@@ -27,8 +28,32 @@ class Transport {
 
     }
 
+    //~~~~~~~~~~~~~ СОБЫТИЯ ~~~~~~~~~~~~~~~~~
 
-    // <------ ВСТАВИТЬ СОБЫТИЯ------------
+    // создаем интерфейс слушателя событий
+    public interface ListenerOfTransport {
+        void onAcceptingTCPPackage(NetworkPackage np);
+    }
+
+    //создаем список обработчиков
+    private ArrayList<ListenerOfTransport> listeners = new ArrayList<ListenerOfTransport>();
+
+    public void addListener(ListenerOfTransport listener) {
+        listeners.add(listener);
+    }
+
+    public void removeListener(ListenerOfTransport listener) {
+        listeners.remove(listener);
+    }
+
+    //событие для случая когда в сокет поступили данные
+    private void fireListenersWhenAcceptingTCPPackage(NetworkPackage np) {
+        // перебираем массив подписчиков и каждому подписчику сообщаем что произошло событие (и передаем параметр заодно)
+        for(ListenerOfTransport listener : listeners) {
+            listener.onAcceptingTCPPackage(np);
+        }
+    }
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     void setIPAdress(String _IPAdress) {
         IPAdress = _IPAdress;
