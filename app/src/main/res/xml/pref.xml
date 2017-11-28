@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    tools:context="com.example.andrey.home916.PrefActivity"
+    <CheckBoxPreference
+        android:key="notifications"
+        android:summary="Включить всплывающие сообщения"
+        android:title="Сообщения"
+        android:defaultValue="true">
+    </CheckBoxPreference>
+    <EditTextPreference
+        android:key="IPcontroller"
+        android:summary="IP адрес контроллера умного дома. Убедитесь, что на роутере проброшен порт внутрь локальной сети."
+        android:title="IP контроллера"
+        android:defaultValue="192.168.0.1">
+    </EditTextPreference>
+    <EditTextPreference
+        android:key="Port"
+        android:summary="Порт подключения контроллера. По умолчанию используется 8010."
+        android:title="Порт"
+        android:defaultValue="8010">
+    </EditTextPreference>
+    <EditTextPreference
+        android:key="Login"
+        android:summary=""
+        android:title="Логин"
+        >
+    </EditTextPreference>
+    <EditTextPreference
+        android:key="Password"
+        android:summary=""
+        android:title="Пароль"
+        >
+    </EditTextPreference>
+
+</PreferenceScreen>
