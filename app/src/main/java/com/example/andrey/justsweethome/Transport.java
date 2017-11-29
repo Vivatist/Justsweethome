@@ -36,7 +36,7 @@ class Transport {
 
     // создаем интерфейс слушателя событий
     public interface ListenerOfTransport {
-        void onAcceptingTCPPackage(NetworkPackage np);
+        void onAcceptingTCPPackage(String str);
     }
 
     //создаем список обработчиков
@@ -50,10 +50,10 @@ class Transport {
         listeners.remove(listener);
     }
 
-    private void fireListenersWhenAcceptingTCPPackage(NetworkPackage np) {
+    private void fireListenersWhenAcceptingTCPPackage(String str) {
         // перебираем массив подписчиков и каждому подписчику сообщаем что произошло событие (и передаем параметр заодно)
         for(ListenerOfTransport listener : listeners) {
-            listener.onAcceptingTCPPackage(np);
+            listener.onAcceptingTCPPackage(str);
         }
     }
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -93,55 +93,47 @@ class Transport {
     }
 
     public void sendTest(){
-        NetworkPackage np = new NetworkPackage();
-        np.UIN = 646464;
-        np.responseToUIN = 111111;
-        np.data = "!TEST PACKET! - !ТЕСТОВЫЙ ПАКЕТ!";
-        new send().execute(np); //отдаем тестовый пакет на передачу в поток
+        Log.print("Создается поток для передачи пакета");
+        new send().execute("!TEST PACKET! - !ТЕСТОВЫЙ ПАКЕТ!"); //отдаем тестовый пакет на передачу в поток
+
     }
 
 
 
     //создаем отдельный поток для отправки донных по сети
-    private class  send extends AsyncTask <NetworkPackage, Integer, Boolean>{
+    private class  send extends AsyncTask <String, Integer, Boolean>{
 
 
         @Override
-        protected Boolean doInBackground(NetworkPackage[] params) {
+        protected Boolean doInBackground(String[] params) {
             try {
                 while (true) {
 
-                    // String str = keyboard.readLine();
-                    Date curTime = new Date();
-                    SimpleDateFormat parsedDate = new SimpleDateFormat("HH:mm:ss SSSS");
-                    //String str = "";
+                    String str = params[0];
+
                     Socket s = new Socket("89.169.58.253", 7777);
-                    //params[0] = parsedDate.format(curTime) + " -> " +params[0]+ "\n" + s.getInetAddress().getHostAddress() + ":" + s.getLocalPort() + "\n";
-
-
-
-                    ObjectOutputStream oos = new ObjectOutputStream( s.getOutputStream() );
-                    oos.writeObject(params[0]);
-
+                    Log.print("------- Сокет открыт -------");
+                    str = str+ "\n" + s.getInetAddress().getHostAddress() + ":" + s.getLocalPort() + "\n";
+                    Log.print("К передаче подготовлен пакет: " + str);
+                    s.getOutputStream().write(params[0].getBytes());
+                    Log.print("Пакет отправлен" + str);
                     // читаем ответ
+                    Log.print("Ждем ответ" + str);
                     byte buf[] = new byte[64 * 1024];
                     int r = s.getInputStream().read(buf);
                     String data = new String(buf, 0, r);
 
-                    // выводим ответ в консоль
-                    System.out.println(data);
+                    Log.print("Ответ сервера: " + data);
 
                     // генерируем событие и передаем через него принятую информацию
                     fireListenersWhenAcceptingTCPPackage(params[0]);
 
                     s.close();
-                    oos.close();
-
+                    Log.print("------- Сокет закрыт -------");
                     return true;
                 }
             } catch (Exception e) {
-                //не забыть добавить сюда событие
-                System.out.println("Ошибка в модуле передачи и приема через socket: " + e);
+                Log.print("Ошибка при отправке либо получении пакета: " + e);
                 return false;
             }
 

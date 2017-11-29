@@ -46,7 +46,8 @@ public class LogActivity extends AppCompatActivity implements Transport.Listener
 
 
     @Override
-    public void onAcceptingTCPPackage(NetworkPackage np) {
-        textViewLog.append(getString(np.UIN) + " " + getString(np.responseToUIN)+ " " + np.data);
+    public void onAcceptingTCPPackage(String str) {
+        System.out.println("Добавляем в лог строку: " + str);
+        textViewLog.append(str);
     }
 }
