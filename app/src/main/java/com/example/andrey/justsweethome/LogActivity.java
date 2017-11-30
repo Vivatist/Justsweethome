@@ -3,7 +3,6 @@ package com.example.andrey.justsweethome;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.support.v4.widget.NestedScrollView;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -14,7 +13,7 @@ public class LogActivity extends AppCompatActivity implements Transport.Listener
 
     TextView textViewLog;
     Transport transport;
-    NestedScrollView scrollView;
+    ScrollView scrollView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,8 +27,8 @@ public class LogActivity extends AppCompatActivity implements Transport.Listener
             @Override
             public void onClick(View view) {
 
-                Snackbar.make(view, "Отправка пакета на контроллер", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+             //   Snackbar.make(view, "Отправка пакета на контроллер", Snackbar.LENGTH_LONG)
+             //           .setAction("Action", null).show();
 
                 transport.sendTest();
                 scrollView.fullScroll(View.FOCUS_DOWN);
@@ -38,8 +37,8 @@ public class LogActivity extends AppCompatActivity implements Transport.Listener
 
         transport = new Transport("89.169.58.253", 7777, "user1", "12345");
         transport.addListener(this); // добавляем  активити в список слушателей класса Transport
-        textViewLog = (TextView) findViewById(R.id.LogTextView);
-        scrollView = (NestedScrollView) findViewById(R.id.NestedScrollView);
+        textViewLog = (TextView) findViewById(R.id.TextView);
+        scrollView = (ScrollView) findViewById(R.id.ScrollView);
     }
 
 
@@ -47,7 +46,17 @@ public class LogActivity extends AppCompatActivity implements Transport.Listener
 
     @Override
     public void onAcceptingTCPPackage(String str) {
-        System.out.println("Добавляем в лог строку: " + str);
-        textViewLog.append(str);
+        Log.print("Ответ сервера: " + str);
+        textViewLog.append(str + "\n");
+
+       /* runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+
+
+
+            }
+        }); */
+
     }
 }

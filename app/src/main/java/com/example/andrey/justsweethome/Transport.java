@@ -4,10 +4,16 @@ package com.example.andrey.justsweethome;
 
         import android.os.AsyncTask;
         import java.net.*;
-        import java.util.Date;
-        import java.text.SimpleDateFormat;
         import java.util.ArrayList;
-        import java.io.*;
+        import android.app.Activity;
+        import android.os.Bundle;
+
+        import java.util.concurrent.TimeUnit;
+
+        import android.app.Activity;
+        import android.os.Bundle;
+        import android.widget.TextView;
+
 
 /**
  * Created by Andrey on 23.11.2017.
@@ -100,12 +106,14 @@ class Transport {
 
 
 
-    //создаем отдельный поток для отправки донных по сети
-    private class  send extends AsyncTask <String, Integer, Boolean>{
+    //создаем отдельный поток для отправки данных по сети
+    private class  send extends AsyncTask <String, Integer, String>{
+
+
 
 
         @Override
-        protected Boolean doInBackground(String[] params) {
+        protected String doInBackground(String[] params) {
             try {
                 while (true) {
 
@@ -113,33 +121,35 @@ class Transport {
 
                     Socket s = new Socket("89.169.58.253", 7777);
                     Log.print("------- Сокет открыт -------");
-                    str = str+ "\n" + s.getInetAddress().getHostAddress() + ":" + s.getLocalPort() + "\n";
+                    str = str + s.getInetAddress().getHostAddress() + ":" + s.getLocalPort();
                     Log.print("К передаче подготовлен пакет: " + str);
                     s.getOutputStream().write(params[0].getBytes());
-                    Log.print("Пакет отправлен" + str);
+                    Log.print("Пакет отправлен: " + str);
                     // читаем ответ
-                    Log.print("Ждем ответ" + str);
+                    Log.print("Ждем ответ...");
                     byte buf[] = new byte[64 * 1024];
                     int r = s.getInputStream().read(buf);
                     String data = new String(buf, 0, r);
 
-                    Log.print("Ответ сервера: " + data);
+                    Log.print("Ответ получен, передаем ответ через событие");
 
-                    // генерируем событие и передаем через него принятую информацию
-                    fireListenersWhenAcceptingTCPPackage(params[0]);
 
-                    s.close();
+                    s.close(); // закрываем socket
                     Log.print("------- Сокет закрыт -------");
-                    return true;
+                    return data;
                 }
             } catch (Exception e) {
                 Log.print("Ошибка при отправке либо получении пакета: " + e);
-                return false;
+                return "";
             }
 
         }
 
-
+        @Override
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+            fireListenersWhenAcceptingTCPPackage(result);
+        }
 
     }
 }
