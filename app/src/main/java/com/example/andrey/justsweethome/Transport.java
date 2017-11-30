@@ -98,9 +98,9 @@ class Transport {
         return UserPassword;
     }
 
-    public void sendTest(){
+    public void sendPackage(String str){
         Log.print("Создается поток для передачи пакета");
-        new send().execute("!TEST PACKET! - !ТЕСТОВЫЙ ПАКЕТ!"); //отдаем тестовый пакет на передачу в поток
+        new send().execute(str); //отдаем текстовый пакет на передачу в поток
 
     }
 

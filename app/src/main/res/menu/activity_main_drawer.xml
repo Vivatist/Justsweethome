@@ -12,7 +12,7 @@
         <item
             android:id="@+id/nav_log"
             android:icon="@drawable/ic_logs"
-            android:title="Протокол работы" />
+            android:title="Консоль" />
         <item
             android:id="@+id/nav_tools"
             android:icon="@drawable/ic_tools"
